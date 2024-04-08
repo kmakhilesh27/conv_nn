@@ -50,8 +50,8 @@ The repository includes the following scripts:
 
 - **Dataset Loading**: The `dataloader.py` script provides functionality to load datasets, including preprocessing and data augmentation.
 - **Model Architecture**: The `model.py` script defines the architecture of the CNN model with customizable hyperparameters.
-- **Training and Testing**: The `train_and_test.py` script trains the CNN model with specified hyperparameters and evaluates its performance on the test set.
-- **Hyperparameter Tuning**: The `hyperparameter_tuning.py` script performs hyperparameter tuning using the wandb platform, exploring different configurations.
+- **Training and Testing**: The `train.py` script trains the CNN model with specified hyperparameters and evaluates its performance on the test set.
+- **Hyperparameter Tuning**: The `params_sweep.py` script performs hyperparameter tuning using the wandb platform, exploring different configurations.
 - **Prediction and Visualization**: The `predict_and_visualize.py` script predicts test set samples using the trained model and visualizes the predictions along with confidence scores. It also logs the visualizations to wandb for further analysis.
 
 ## Examples <a name="examples"></a>
