@@ -58,7 +58,7 @@ The repository includes the following scripts:
 
 ### Training and Testing
 ```bash
-python train.py --num_filters 32 --filter_size 5 --filter_org 1 --activation ReLU --dense_size 512 --dropout 0.3 --use_batch_norm
+python train.py --num_filters 32 --filter_size 5 --filter_org 1 --activation ReLU --dense_size 512 --dropout 0.3 --num_epochs 10 --learning_rate 0.001 --use_batch_norm
 ```
 
 ### Hyperparameter Tuning
