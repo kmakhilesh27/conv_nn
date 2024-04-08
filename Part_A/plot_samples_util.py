@@ -1,64 +1,59 @@
 import torch
-import torchvision
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 import wandb
 
-def imshow(img):
-    npimg = img.numpy()
-    plt.imshow(np.transpose(npimg, (1, 2, 0)))
-    plt.axis('off')
-    plt.show()
-
 def plot_test_samples(model, test_loader, wandb_log=False, wandb_project=None, wandb_run_name=None):
-    classes = ('Amphibia', 'Animalia', 'Arachnida', 'Aves', 'Fungi', 'Insecta', 'Mammalia', 'Mollusca', 'Plantae', 'Reptilia')
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.eval()
+    model.to(device)
+    
+    class_labels = ['Amphibia', 'Animalia', 'Arachnida', 'Aves', 'Fungi', 'Insecta', 'Mammalia', 'Mollusca', 'Plantae', 'Reptilia']
 
-    dataiter = iter(test_loader)
-    images, labels = dataiter.next()
+    # Select random samples from the test loader
+    sample_indices = np.random.choice(len(test_loader.dataset), size=10, replace=False)
 
-    # make predictions
-    outputs = model(images)
-    _, predicted = torch.max(outputs, 1)
+    images_to_log = []
 
-    num_images = len(images)
-    fig, axes = plt.subplots(num_images, 3, figsize=(10, num_images * 3))
+    fig, axes = plt.subplots(10, 3, figsize=(15, 30))
+    for i, idx in enumerate(sample_indices):
+        image, label = test_loader.dataset[idx]
+        image = image.unsqueeze(0).to(device)
+        output = model(image)
+        _, predicted = torch.max(output, 1)
+        predicted_label = class_labels[predicted.item()]
 
-    for idx in range(num_images):
-        # display image
-        ax = axes[idx, 0]
-        imshow(images[idx])
-        ax.set_title('Ground Truth: {}'.format(classes[labels[idx]]))
+        # Plot the image
+        image_np = (image.cpu().squeeze().permute(1, 2, 0).numpy() * 255).astype(np.uint8)
+        axes[i, 0].imshow(image_np)
+        axes[i, 0].axis('off')
+        axes[i, 0].set_title(f"True Label: {class_labels[label]}")
 
-        # display prediction
-        ax = axes[idx, 1]
-        imshow(torchvision.utils.make_grid(images[idx]))
-        ax.set_title('Prediction: {}'.format(classes[predicted[idx]]))
+        # Log the predicted label
+        axes[i, 1].text(0.5, 0.5, f"Predicted: {predicted_label}", ha='center', va='center', fontsize=12)
+        axes[i, 1].axis('off')
 
-        # display confidence scores
-        ax = axes[idx, 2]
-        softmax = torch.nn.Softmax(dim=1)
-        probs = softmax(outputs[idx]).detach().numpy()
-        ax.bar(classes, probs[0])
-        ax.set_title('Confidence Scores')
+        # Log the confidence scores for each class
+        confidence_scores = torch.softmax(output, dim=1).squeeze().cpu().detach().numpy()
+        axes[i, 2].barh(np.arange(len(class_labels)), confidence_scores)
+        axes[i, 2].set_yticks(np.arange(len(class_labels)))
+        axes[i, 2].set_yticklabels(class_labels)
+        axes[i, 2].set_title('Confidence Scores')
+        axes[i, 2].set_xlim(0, 1)
+
+        if wandb_log:
+            # Convert image tensor to NumPy array with dtype uint8
+            image_np_uint8 = (image.cpu().squeeze().permute(1, 2, 0).numpy() * 255).astype(np.uint8)
+            images_to_log.append(wandb.Image(image_np_uint8, caption=f"True Label: {class_labels[label]}, Predicted Label: {predicted_label}"))
 
     plt.tight_layout()
     plt.show()
 
     if wandb_log:
         if wandb_project is None or wandb_run_name is None:
-            raise ValueError("Please provide WandB PROJECT_NAME and RUN_NAME.")
-
-        wandb.init(project=wandb_project, name=wandb_run_name)
-
-        for idx in range(num_images):
-            wandb.log({
-                "Ground Truth": classes[labels[idx]],
-                "Prediction": classes[predicted[idx]],
-                "Confidence Scores": {class_name: float(score) for class_name, score in zip(classes, probs[0])},
-                "Image": [wandb.Image(images[idx], caption="Ground Truth: {}\nPrediction: {}".format(classes[labels[idx]], classes[predicted[idx]]))]
-            })
-
-        wandb.finish()
-
-# Usage:
-# plot_test_samples(model, test_loader, wandb_log=True, wandb_project="your_project_name", wandb_run_name="your_run_name")
+            print("Please provide wandb_project and wandb_run_name.")
+            return
+        else:
+            wandb.init(project=wandb_project, name=wandb_run_name)
+            wandb.log({"Test Samples": images_to_log})
+            wandb.finish()
