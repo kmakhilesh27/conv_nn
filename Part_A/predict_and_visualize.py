@@ -23,14 +23,17 @@ def predict_test(model, test_loader):
     print(f"Test Accuracy: {accuracy:.2f}%")
 
 if __name__=="__main__":
+
     SAVED_MODEL_PATH = "best_model.pth"
-    # Instantiate the best model
+
+    # create an instance of the model
     best_model = CNN()
-    # Load the saved model
+    # load the saved model
     checkpoint = torch.load(SAVED_MODEL_PATH)
     best_model.load_state_dict(checkpoint)
 
-    _, _, test_loader = load_dataset()
-    # Prediction on the test set
+    _, _, test_loader = load_dataset(augment_data=False)
+
+    # prediction on the test set
     predict_test(best_model, test_loader)
-    plot_test_samples(best_model, test_loader, wandb_log=False, wandb_project="CS6910_Assignment_2", wandb_run_name="plot_test_samples")
+    plot_test_samples(best_model, test_loader, wandb_log=True, wandb_project="CS6910_Assignment_2", wandb_run_name="plot_test_samples")
