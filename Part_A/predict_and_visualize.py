@@ -33,4 +33,4 @@ if __name__=="__main__":
     _, _, test_loader = load_dataset()
     # Prediction on the test set
     predict_test(best_model, test_loader)
-    plot_test_samples(best_model, test_loader, wandb_log=True, wandb_project="CS6910_Assignment_2", wandb_run_name="plot_test_samples")
+    plot_test_samples(best_model, test_loader, wandb_log=False, wandb_project="CS6910_Assignment_2", wandb_run_name="plot_test_samples")
