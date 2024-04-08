@@ -5,7 +5,7 @@ from tqdm.auto import tqdm
 from dataloader import load_dataset
 from model import CNN
 from argeparser import arg_parser, get_activation
-
+from plot_samples_util import plot_test_samples
 
 def train(model, train_loader, val_loader, num_epochs=5, learning_rate=0.001):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -78,7 +78,8 @@ if __name__ == "__main__":
     args = parser.parse_args()    
     activation_func = get_activation(args.activation)
     
-    train_loader, val_loader, test_loader = load_dataset()
+    train_loader, val_loader, test_loader = load_dataset(augment_data=False)
     model = CNN(args.num_filters, args.filter_size, args.filter_org, activation_func, args.dense_size, args.dropout, args.use_batch_norm)
-    train(model, train_loader, val_loader, num_epochs=10, learning_rate=0.001)
+    train(model, train_loader, val_loader, num_epochs=args.num_epochs, learning_rate=args.learning_rate)
     test(model, test_loader)
+    plot_test_samples(model, test_loader, wandb_log=False)
