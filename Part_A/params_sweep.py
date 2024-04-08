@@ -6,9 +6,10 @@ from tqdm import tqdm
 from model import CNN
 from dataloader import load_dataset
 
-SAVED_MODEL_PATH = "best_model.pth"
-PROJ_NAME = "CS6910_Assignment_2"
 best_val_acc = 0.0
+SAVED_MODEL_PATH = "best_model.pth" # Save the best model across all sweeps
+PROJ_NAME = "CS6910_Assignment_2"
+
 
 def getRunName(config):
     run_name = "n_filters_{}_filter_size_{}_filter_org_{}_activ_{}_dense_size_{}_b_norm_{}_dropout_{}_lr_{}_aug_{}".format(
